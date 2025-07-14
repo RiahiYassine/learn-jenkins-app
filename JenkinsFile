@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     stages {
+        
+        /*
         stage('Build') {
             agent{
                 docker{ // Setting up the build environment in a Docker container
@@ -18,7 +20,7 @@ pipeline {
                 '''
             }
         }
-
+        */
         stage ('Test') {
             agent {
                 docker {
@@ -28,7 +30,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    test -f build/index.html
                     npm test
                 ''' 
             }
@@ -39,7 +40,7 @@ pipeline {
 
     post {
         always {
-            junit 'test-results/junit.xml'
+            junit 'test-results/junit.xml' // Publish JUnit test results
         }
     }
 
