@@ -2,9 +2,18 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+        stage('Build') {
+            agent{
+                image 'node:18-alpine' // Setting up the build environment we need (in this case, Node.js)
+                reuseNode true // workspace will be reused across stages
+            }
             steps {
-                echo 'Hello, World!'
+                sh '''
+                    ls -la
+                    npm ci
+                    npm run build
+                    ls -la
+                '''
             }
         }
     }
