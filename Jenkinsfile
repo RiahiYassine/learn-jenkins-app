@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         
-        /*
+        
         stage('Build') {
             agent{
                 docker{ // Setting up the build environment in a Docker container
@@ -20,7 +20,7 @@ pipeline {
                 '''
             }
         }
-        */
+        
         stage ('Test') {
             agent {
                 docker {
