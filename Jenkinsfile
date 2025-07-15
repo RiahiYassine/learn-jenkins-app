@@ -3,14 +3,7 @@ pipeline {
 
     stages {
         
-        stage('Pre-pull Playwright image') {
-            steps {
-                script {
-                    sh 'docker pull mcr.microsoft.com/playwright:v1.54.0-noble || true'
-                }
-            }
-        }
-        
+
         stage('Build') {
             agent{
                 docker{ // Setting up the build environment in a Docker container
