@@ -8,7 +8,6 @@ pipeline {
 
     stages {
         
-        /*
         stage('Build') {
             agent{
                 docker{ // Use a Docker container as build environment
@@ -23,7 +22,6 @@ pipeline {
                 '''
             }
         }
-        */
         
         stage('Tests'){
             parallel {
