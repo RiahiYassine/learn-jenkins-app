@@ -84,9 +84,10 @@ pipeline {
             }
 
             steps {
+                // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
                     npm install netlify-cli
-                    netlify --version
+                    node_modules/.bin/netlify --version
                 '''    
             }
 
