@@ -14,7 +14,7 @@ pipeline {
             steps {
                 sh '''
                     ls -la
-                    npm ci
+                    npm install
                     npm run build
                     ls -la
                 '''
