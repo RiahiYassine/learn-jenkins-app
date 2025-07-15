@@ -83,7 +83,7 @@ pipeline {
         stage ('Deploy') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'node-netlify:18'
                     reuseNode true
                 }
             }
@@ -91,7 +91,6 @@ pipeline {
             steps {
                 // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
-                    npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     echo "Deploying to Netlify... site ID: $NETLIFY_SITE_ID"
                 '''    
