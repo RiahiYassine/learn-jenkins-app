@@ -1,22 +1,20 @@
 pipeline {
-    agent any
+    agent any // Run pipeline on any available Jenkins agent
 
     stages {
         
 
         stage('Build') {
             agent{
-                docker{ // Setting up the build environment in a Docker container
+                docker{ // Use a Docker container as build environment
                     image 'node:18-alpine'
                     reuseNode true // workspace will be reused across stages
                 }
             }
             steps {
                 sh '''
-                    ls -la
                     npm install
                     npm run build
-                    ls -la
                 '''
             }
         }
@@ -27,7 +25,7 @@ pipeline {
                     agent {
                         docker {
                             image 'node:18-alpine'
-                            reuseNode true
+                            reuseNode true // Reuse workspace to access node_modules and build artifacts
                         }
                     }
                     steps {
@@ -37,7 +35,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'jest-results/junit.xml' // Publish JUnit test results
+                            junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
                         }
                     }
                 }
@@ -45,20 +43,30 @@ pipeline {
                     agent {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.54.0-noble'
-                            reuseNode true
+                            reuseNode true 
                         }
                     }
                     steps {
+                        // Serve the built application in the background, save the server process ID, and wait for it to be ready
+                        // Run Playwright end-to-end tests with an HTML report
+                        // Finally stop the server to clean up the process
                         sh '''
                             npm install serve
                             node_modules/.bin/serve -s build &
+                            SERVER_PID=$!
                             sleep 10
                             npx playwright test --reporter=html
+                            kill $SERVER_PID
                         ''' 
                     }
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            // Publish Playwright HTML report in Jenkins UI
+                            publishHTML([
+                                reportDir: 'playwright-report', 
+                                reportFiles: 'index.html', 
+                                reportName: 'Playwright HTML Report'
+                            ])
                         }
                     }
                 }
