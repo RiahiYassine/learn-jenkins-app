@@ -63,10 +63,13 @@ pipeline {
                         always {
                             // Publish Playwright HTML report in Jenkins UI
                             publishHTML([
+                                allowMissing: false, 
+                                alwaysLinkToLastBuild: false, 
+                                keepAll: false, 
                                 reportDir: 'playwright-report', 
                                 reportFiles: 'index.html', 
-                                reportName: 'Playwright HTML Report'
-                            ])
+                                reportName: 'Playwright HTML Report', 
+                                useWrapperFileDirectly: true])
                         }
                     }
                 }
