@@ -40,6 +40,11 @@ pipeline {
                     npm test
                 ''' 
             }
+            post {
+                always {
+                    junit 'test-results/junit.xml' // Publish JUnit test results
+                }
+            }
         }
 
         stage ('E2E Tests') {
@@ -62,10 +67,6 @@ pipeline {
     }
 
 
-    post {
-        always {
-            junit 'test-results/junit.xml' // Publish JUnit test results
-        }
-    }
+    
 
 }
