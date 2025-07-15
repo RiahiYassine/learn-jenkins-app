@@ -17,6 +17,7 @@ pipeline {
             }
             steps {
                 sh '''
+                    rm -rf node_modules package-lock.json
                     npm install
                     npm run build
                 '''
@@ -64,16 +65,8 @@ pipeline {
                         ''' 
                     }
                     post {
-                        always {
-                            // Publish Playwright HTML report in Jenkins UI
-                            publishHTML([
-                                allowMissing: false, 
-                                alwaysLinkToLastBuild: false, 
-                                keepAll: false, 
-                                reportDir: 'playwright-report', 
-                                reportFiles: 'index.html', 
-                                reportName: 'Playwright HTML Report', 
-                                useWrapperFileDirectly: true])
+                        always { // Publish Playwright HTML report in Jenkins UI
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -91,9 +84,7 @@ pipeline {
             steps {
                 // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
-                    if [ ! -d node_modules/netlify-cli ]; then
-                        npm install netlify-cli@20.1.1
-                    fi
+                    npm install netlify-cli@20.1.1
                     ./node_modules/.bin/netlify --version
                     echo "Deploying to Netlify... site ID: $NETLIFY_SITE_ID"
                 '''    
