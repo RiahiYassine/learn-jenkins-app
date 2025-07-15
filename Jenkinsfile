@@ -3,7 +3,6 @@ pipeline {
     agent any // Run pipeline on any available Jenkins agent
 
     environment {
-        NETLIFY_SITE_ID = '19e6486f-30b6-40e4-8e6c-0906e445989f'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token') // Use Jenkins credentials for Netlify authentication
     }
 
@@ -85,8 +84,6 @@ pipeline {
                 // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
                     npm install netlify-cli@20.1.1
-                    ./node_modules/.bin/netlify --version
-                    echo "Deploying to Netlify... site ID: $NETLIFY_SITE_ID"
                     ./node_modules/.bin/netlify status
                     ./node_modules/.bin/netlify deploy --dir=build --prod
                 '''    
