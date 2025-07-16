@@ -25,22 +25,20 @@ pipeline {
         }
 
         stage('Tests'){
-            stage ('Unit Tests') {
-                agent {
-                    docker {
-                        image 'node:18-alpine'
-                        reuseNode true // Reuse workspace to access node_modules and build artifacts
-                    }
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true // Reuse workspace to access node_modules and build artifacts
                 }
-                steps {
-                    sh '''
-                        npm test
-                    ''' 
-                }
-                post {
-                    always {
-                        junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
-                    }
+            }
+            steps {
+                sh '''
+                    npm test
+                ''' 
+            }
+            post {
+                always {
+                    junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
                 }
             }
         }
