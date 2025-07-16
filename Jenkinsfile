@@ -11,7 +11,7 @@ pipeline {
         
         stage('Build') {
             agent{
-                docker{ // Use a Docker container as build environment
+                docker{
                     image 'node:18-alpine'
                     reuseNode true // workspace will be reused across stages
                 }
@@ -23,57 +23,84 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Tests'){
-            parallel {
-                stage ('Unit Tests') {
-                    agent {
-                        docker {
-                            image 'node:18-alpine'
-                            reuseNode true // Reuse workspace to access node_modules and build artifacts
-                        }
-                    }
-                    steps {
-                        sh '''
-                            npm test
-                        ''' 
-                    }
-                    post {
-                        always {
-                            junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
-                        }
+            stage ('Unit Tests') {
+                agent {
+                    docker {
+                        image 'node:18-alpine'
+                        reuseNode true // Reuse workspace to access node_modules and build artifacts
                     }
                 }
-                stage ('E2E Tests') {
-                    agent {
-                        docker {
-                            image 'mcr.microsoft.com/playwright:v1.54.0-noble'
-                            reuseNode true 
-                        }
-                    }
-                    steps {
-                        // Serve the built application in the background, save the server process ID, and wait for it to be ready
-                        // Run Playwright end-to-end tests with an HTML report
-                        // Finally stop the server to clean up the process
-                        sh '''
-                            npm install serve
-                            node_modules/.bin/serve -s build &
-                            SERVER_PID=$!
-                            sleep 10
-                            npx playwright test --reporter=html
-                            kill $SERVER_PID
-                        ''' 
-                    }
-                    post {
-                        always { // Publish Playwright HTML report in Jenkins UI
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
-                        }
+                steps {
+                    sh '''
+                        npm test
+                    ''' 
+                }
+                post {
+                    always {
+                        junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
                     }
                 }
             }
         }
 
-        stage ('Deploy') {
+        stage ('Deploy to Staging') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+
+            steps {
+                // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
+                sh '''
+                    npm install netlify-cli@20.1.1
+                    npm install node-jq
+                    ./node_modules/.bin/netlify status
+                    ./node_modules/.bin/netlify deploy --dir=build --json > deploy-staging-output.json
+                '''
+                script {
+                    env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-staging-output.json", returnStdout: true)
+                }    
+            }
+
+        }
+
+        stage ('Staging E2E Tests') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.54.0-noble'
+                    reuseNode true 
+                }
+            }
+
+            environment {
+                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+            }
+
+            steps {
+                sh '''
+                    npx playwright test --reporter=html
+                ''' 
+            }
+            post {
+                always { // Publish Playwright HTML report in Jenkins UI
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
+                }
+            }
+        }
+
+        stage ('Approval for Production') {
+            steps {
+                timeout(time: 15, unit: 'MINUTES') { // Wait for manual approval for 15 minute
+                    input message: 'Approve deployment to production?', ok: 'Deploy'
+                }
+            }
+        }
+
+        stage ('Deploy Production') {
             agent {
                 docker {
                     image 'node:18-alpine'
