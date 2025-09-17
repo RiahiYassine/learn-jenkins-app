@@ -75,7 +75,7 @@ pipeline {
                 }
             }
 
-            e    }nvironment {
+            environment {
                 CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
             }
 
