@@ -1,11 +1,11 @@
 pipeline {
 
-    agent any // Run pipeline on any available Jenkins agent
+    agent any
 
     environment {
         NETLIFY_SITE_ID = '19e6486f-30b6-40e4-8e6c-0906e445989f'
-        NETLIFY_AUTH_TOKEN = credentials('netlify-token') // Use Jenkins credentials for Netlify authentication
-        REACT_APP_VERSION = "1.0.$BUILD_ID" // Set application version using Jenkins build ID
+        NETLIFY_AUTH_TOKEN = credentials('netlify-token')
+        REACT_APP_VERSION = "1.0.$BUILD_ID"
     }
 
     stages {
@@ -14,8 +14,7 @@ pipeline {
             agent{
                 docker{
                     image 'node:18-alpine'
-                    reuseNode true // workspace will be reused across stages
-                }
+                    reuseNode true
             }
             steps {
                 sh '''
@@ -29,7 +28,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    reuseNode true // Reuse workspace to access node_modules and build artifacts
+                    reuseNode true
                 }
             }
             steps {
@@ -39,7 +38,7 @@ pipeline {
             }
             post {
                 always {
-                    junit 'jest-results/junit.xml' // Publish JUnit test results for Jenkins reporting
+                    junit 'jest-results/junit.xml'
                 }
             }
         }
@@ -53,7 +52,6 @@ pipeline {
             }
 
             steps {
-                // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
                     npm install netlify-cli@20.1.1
                     npm install node-jq
@@ -85,7 +83,7 @@ pipeline {
                 ''' 
             }
             post {
-                always { // Publish Playwright HTML report in Jenkins UI
+                always {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
                 }
             }
@@ -93,7 +91,7 @@ pipeline {
 
         stage ('Approval for Production') {
             steps {
-                timeout(time: 15, unit: 'MINUTES') { // Wait for manual approval for 15 minute
+                timeout(time: 15, unit: 'MINUTES') {
                     input message: 'Approve deployment to production?', ok: 'Deploy'
                 }
             }
@@ -108,7 +106,6 @@ pipeline {
             }
 
             steps {
-                // Install Netlify CLI inside the Docker container, specifically in the local project directory not globally (- g) because of permission issues.
                 sh '''
                     npm install netlify-cli@20.1.1
                     ./node_modules/.bin/netlify status

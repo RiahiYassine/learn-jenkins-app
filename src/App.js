@@ -1,8 +1,6 @@
 import './App.css';
 
 function App() {
-  const version = process.env.REACT_APP_VERSION || '1';
-
   return (
     <>
       <div className="App">
