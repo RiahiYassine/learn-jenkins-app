@@ -15,6 +15,7 @@ pipeline {
                 docker{
                     image 'node:18-alpine'
                     reuseNode true
+                }
             }
             steps {
                 sh '''
@@ -83,7 +84,7 @@ pipeline {
                 ''' 
             }
             post {
-                always {
+                always { 
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
                 }
             }
@@ -91,7 +92,7 @@ pipeline {
 
         stage ('Approval for Production') {
             steps {
-                timeout(time: 15, unit: 'MINUTES') {
+                timeout(time: 15, unit: 'MINUTES') { 
                     input message: 'Approve deployment to production?', ok: 'Deploy'
                 }
             }
