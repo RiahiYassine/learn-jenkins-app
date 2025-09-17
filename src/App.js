@@ -25,7 +25,7 @@ function App() {
         </header>
       </div>
       <footer className="App-footer">
-        <p className="version">Application version: {version}</p>
+        <p className="version">Application version: {process.env.REACT_APP_VERSION}</p>
       </footer>
     </>
 

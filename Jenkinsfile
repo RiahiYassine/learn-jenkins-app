@@ -5,6 +5,7 @@ pipeline {
     environment {
         NETLIFY_SITE_ID = '19e6486f-30b6-40e4-8e6c-0906e445989f'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token') // Use Jenkins credentials for Netlify authentication
+        REACT_APP_VERSION = "1.0.$BUILD_ID" // Set application version using Jenkins build ID
     }
 
     stages {
@@ -74,7 +75,7 @@ pipeline {
                 }
             }
 
-            environment {
+            e    }nvironment {
                 CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
             }
 
@@ -86,7 +87,7 @@ pipeline {
             post {
                 always { // Publish Playwright HTML report in Jenkins UI
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', useWrapperFileDirectly: true])
-                }
+            
             }
         }
 
